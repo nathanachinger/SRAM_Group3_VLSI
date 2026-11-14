@@ -1,1 +1,28 @@
-*cdslck
+# Virtuoso lock files (created while a cellview is open)
+*.cdslck
+*.cdslck.*
+
+# Virtuoso automatic backups
+*.oa-
+*.dm-
+*%
+
+# Logs
+CDS.log*
+*.log
+panic*.log*
+
+# Simulation results stored inside maestro/ADE views
+**/maestro/results/
+**/adexl/results/
+
+# Simulation and tool output, in case any lands in the repo
+simulation/
+psf/
+*.raw
+.cadence/
+
+# Editor and network-filesystem leftovers
+*~
+*.swp
+.nfs*

@@ -13,7 +13,7 @@ Only the owner of a cell commits changes to it. Everyone else opens it read-only
 | `bitcell` | 6T SRAM bitcell | TBD |
 | `row_decoder` | Row address decoder | TBD |
 | `col_decoder` | Column address decoder | TBD |
-| `sense_amp` | Sense amplifier | TBD |
+| `sense_amp` | Sense amplifier | [@nathanachinger](https://github.com/nathanachinger) |
 | `sram_top` | Top-level integration | TBD |
 | `test_schematic` | Scratch cell for testing the Git setup | anyone |
 

@@ -4,20 +4,36 @@ Group 3 final project for EEE4310: a simple SRAM designed in Cadence Virtuoso.
 
 This repository **is** the Virtuoso library. Each top-level folder is a cell, and each folder inside a cell is a view (schematic, symbol, layout, and so on).
 
+## Roles
+
+The work is split into four areas. Each person owns every cell in their area.
+
+| Role | Area | Responsibilities | Owner |
+|---|---|---|---|
+| Person 1 | Decoder | Logic gates, row decoder, column decoder | TBD |
+| Person 2 | SRAM | Bitcell, bitcell array, precharge | TBD |
+| Person 3 | Peripheral | Sense amplifier, read/write circuitry | [@nathanachinger](https://github.com/nathanachinger) |
+| Person 4 | Integration | Top-level schematic, top-level testbench, combined layout | TBD |
+
 ## Blocks and owners
 
 Only the owner of a cell commits changes to it. Everyone else opens it read-only.
 
-| Cell | Description | Owner |
-|---|---|---|
-| `bitcell` | 6T SRAM bitcell | TBD |
-| `row_decoder` | Row address decoder | TBD |
-| `col_decoder` | Column address decoder | TBD |
-| `sense_amp` | Sense amplifier | [@nathanachinger](https://github.com/nathanachinger) |
-| `sram_top` | Top-level integration | TBD |
-| `test_schematic` | Scratch cell for testing the Git setup | anyone |
+| Cell | Description | Area | Owner |
+|---|---|---|---|
+| `inverter` | Inverter and other basic logic gates | Decoder | Person 1 |
+| `row_decoder` | Row address decoder | Decoder | Person 1 |
+| `col_decoder` | Column address decoder | Decoder | Person 1 |
+| `bitcell` | 6T SRAM bitcell | SRAM | Person 2 |
+| `array` *(planned)* | Bitcell array | SRAM | Person 2 |
+| `precharge` *(planned)* | Bitline precharge circuit | SRAM | Person 2 |
+| `sense_amp` | Sense amplifier | Peripheral | Person 3 |
+| `write_driver` *(planned)* | Write circuitry | Peripheral | Person 3 |
+| `sram_top` | Top-level schematic and combined layout | Integration | Person 4 |
+| `sram_top_tb` *(planned)* | Top-level testbench | Integration | Person 4 |
+| `test_schematic` | Scratch cell for testing the Git setup | — | anyone |
 
-Testbenches go in their own cell named `<block>_tb` (for example `sense_amp_tb`) and belong to the owner of that block.
+Testbenches go in their own cell named `<block>_tb` (for example `sense_amp_tb`) and belong to the owner of that block. Planned cell names are suggestions; the owner can rename them before creating the cell.
 
 ## File structure
 

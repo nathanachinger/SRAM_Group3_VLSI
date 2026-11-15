@@ -31,9 +31,65 @@ Only the owner of a cell commits changes to it. Everyone else opens it read-only
 | `write_driver` *(planned)* | Write circuitry | Peripheral | Person 3 |
 | `sram_top` | Top-level schematic and combined layout | Integration | Person 4 |
 | `sram_top_tb` *(planned)* | Top-level testbench | Integration | Person 4 |
-| `test_schematic` | Scratch cell for testing the Git setup | — | anyone |
 
 Testbenches go in their own cell named `<block>_tb` (for example `sense_amp_tb`) and belong to the owner of that block. Planned cell names are suggestions; the owner can rename them before creating the cell.
+
+## Pinout and Naming Convention
+### Top-level pins
+
+The complete array, `sram_top`, has 13 pins under 10 names.
+
+| Pin | Dir | Width | Function |
+| --- | --- | --- | --- |
+| `CLK1` | in | 1 | Enables the tri-state buffers that pass the read and write commands (at least 10 MHz). Timing reference for all read and write measurements. |
+| `CLK2` | in | 1 | Drives the precharge PMOS devices; both bit lines precharge to VDD. |
+| `WR` | in | 1 | Write command, active-high. Never high together with `RD`. |
+| `RD` | in | 1 | Read command, active-high. Never high together with `WR`. |
+| `DATA_IN` | in | 1 | Bit to write to the addressed cell. |
+| `DATA_OUT` | out | 1 | Bit read from the addressed cell (sense amplifier buffer output). |
+| `RA<1:0>` | in | 2 | Row address. |
+| `CA<2:0>` | in | 3 | Column address. Only 000 to 101 are valid. |
+| `VDD` | inout | 1 | Supply. |
+| `VSS` | inout | 1 | Ground. |
+
+### Internal nets
+
+These nets connect the blocks inside `sram_top`. Label them in the schematic so they show up by name in the waveform browser.
+
+| Net | Width | Driven by | Meaning |
+| --- | --- | --- | --- |
+| `WL<3:0>` | 4 | Row decoder | Word lines, one per row. `WL<n>` selects row `Rn`. |
+| `COL<5:0>` | 6 | Column decoder | Column selects, active-high. `COL<n>` selects column `Cn`. All low for addresses 110 and 111. |
+| `BL<5:0>` | 6 | Precharge, cells, write driver | True bit lines, one per column. |
+| `BLB<5:0>` | 6 | Precharge, cells, write driver | Complement bit lines. |
+| `DB`, `DBB` | 1 each | Column pass gates | Shared data bus pair between the column pass gates and the write driver and sense amplifier. |
+| `WR_EN` | 1 | Read/write control | `WR` after the `CLK1` tri-state buffer; enables the write driver. |
+| `RD_EN` | 1 | Read/write control | `RD` after the `CLK1` tri-state buffer; enables the sense amplifier. |
+| `SA_OUT` | 1 | Sense amplifier | Sense amplifier output before the output buffer. |
+| `Q_R<r>_C<c>` | 24 nets | Cell | Storage node of the cell at row r, column c, for example `Q_R2_C4`. |
+| `QB_R<r>_C<c>` | 24 nets | Cell | Complement storage node of the same cell. |
+
+### Address map
+
+The index in every net name equals the binary value of its address, so `RA = 10` and `CA = 011` select cell `Q_R2_C3`.
+
+| `RA<1:0>` | Word line high | Row |
+| --- | --- | --- |
+| 00 | `WL<0>` | R0 |
+| 01 | `WL<1>` | R1 |
+| 10 | `WL<2>` | R2 |
+| 11 | `WL<3>` | R3 |
+
+| `CA<2:0>` | Column select high | Column |
+| --- | --- | --- |
+| 000 | `COL<0>` | C0 |
+| 001 | `COL<1>` | C1 |
+| 010 | `COL<2>` | C2 |
+| 011 | `COL<3>` | C3 |
+| 100 | `COL<4>` | C4 |
+| 101 | `COL<5>` | C5 |
+| 110 | none | unused |
+| 111 | none | unused |
 
 ## File structure
 

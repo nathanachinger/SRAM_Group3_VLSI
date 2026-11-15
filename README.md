@@ -13,7 +13,7 @@ The work is split into four areas. Each person owns every cell in their area.
 | Person 1 | Decoder | Logic gates, row decoder, column decoder | [@Coppola-J](https://github.com/Coppola-J) |
 | Person 2 | SRAM | Bitcell, bitcell array, precharge | [@rcorreafl](https://github.com/rcorreafl) |
 | Person 3 | Peripheral | Sense amplifier, read/write circuitry | [@nathanachinger](https://github.com/nathanachinger) |
-| Person 4 | Integration | Top-level schematic, top-level testbench, combined layout | Mariano |
+| Person 4 | Integration | Top-level schematic, top-level testbench, combined layout | [@MarianoRequejo609](https://github.com/MarianoRequejo609) |
 
 ## Blocks and owners
 

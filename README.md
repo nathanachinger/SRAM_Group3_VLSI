@@ -19,38 +19,65 @@ The work is split into four areas. Each person owns every cell in their area.
 
 Only the owner of a cell commits changes to it. Everyone else opens it read-only.
 
-| Cell | Description | Area | Owner |
-|---|---|---|---|
-| `inverter` | Inverter and other basic logic gates | Decoder | Person 1 |
-| `row_decoder` | Row address decoder | Decoder | Person 1 |
-| `col_decoder` | Column address decoder | Decoder | Person 1 |
-| `bitcell` | 6T SRAM bitcell | SRAM | Person 2 |
-| `array` *(planned)* | Bitcell array | SRAM | Person 2 |
-| `precharge` *(planned)* | Bitline precharge circuit | SRAM | Person 2 |
-| `sense_amp` | Sense amplifier | Peripheral | Person 3 |
-| `write_driver` *(planned)* | Write circuitry | Peripheral | Person 3 |
-| `sram_top` | Top-level schematic and combined layout | Integration | Person 4 |
-| `sram_top_tb` *(planned)* | Top-level testbench | Integration | Person 4 |
+| Cell | Description | Area | Owner | Views |
+|---|---|---|---|---|
+| `inverter` | Static CMOS inverter | Decoder | Person 1 | schematic, symbol |
+| `nand2` | 2-input NAND | Decoder | Person 1 | schematic, symbol |
+| `nand3` | 3-input NAND (column decoder) | Decoder | Person 1 | schematic, symbol |
+| `tri_inv` | Tri-state inverter (read/write control) | Decoder | Person 1 | schematic, symbol |
+| `tgate` | Transmission gate (column pass gate) | Decoder | Person 1 | schematic, symbol |
+| `row_decoder` | 2-to-4 row decoder, drives the word lines | Decoder | Person 1 | schematic, symbol |
+| `col_decoder` | 3-to-6 column decoder, drives true and complement column selects | Decoder | Person 1 | schematic, symbol |
+| `bitcell` | 6T SRAM bitcell (PD 240n, PG/PU 120n) | SRAM | Person 2 | schematic, symbol |
+| `bitcell_tb` | Bitcell testbench | SRAM | Person 2 | schematic, sim state |
+| `precharge` | Bit line precharge, one per column | SRAM | Person 2 | schematic, symbol |
+| `sense_amp` | Sense amplifier with output inverter | Peripheral | Person 3 | schematic, symbol |
+| `sense_amp_tb` | Sense amplifier testbench | Peripheral | Person 3 | schematic, sim state |
+| `RW_ctrl` | Read/write control: clocks `WR`/`RD`, drives the write data bus and the sense amp enable | Peripheral | Person 3 | schematic, symbol |
+| `RW_ctrl_tb` | Read/write control testbench | Peripheral | Person 3 | schematic, sim state |
+| `sram_top` | Top-level schematic: 4×6 bitcell array plus all peripherals | Integration | Person 4 | schematic, symbol |
+| `sram_top_tb` | Top-level testbench | Integration | Person 4 | schematic |
+| `test_schematic` | Scratch cell for testing the Git setup | — | anyone | schematic |
 
-Testbenches go in their own cell named `<block>_tb` (for example `sense_amp_tb`) and belong to the owner of that block. Planned cell names are suggestions; the owner can rename them before creating the cell.
+There is no separate array cell: the 24 bitcells are placed directly in `sram_top`. No cell has a layout view yet.
+
+Testbenches go in their own cell named `<block>_tb` and belong to the owner of that block.
 
 ## Pinout and Naming Convention
+
 ### Top-level pins
 
-The complete array, `sram_top`, has 13 pins under 10 names.
+`sram_top` has 13 pins under 9 names. These match the `sram_top` symbol and `sram_top_tb`.
 
 | Pin | Dir | Width | Function |
 | --- | --- | --- | --- |
-| `CLK1` | in | 1 | Enables the tri-state buffers that pass the read and write commands (at least 10 MHz). Timing reference for all read and write measurements. |
+| `CLK1` | in | 1 | Enables the tri-state inverters in `RW_ctrl` that pass the read and write commands (at least 10 MHz). Timing reference for all read and write measurements. |
 | `CLK2` | in | 1 | Drives the precharge PMOS devices; both bit lines precharge to VDD. |
 | `WR` | in | 1 | Write command, active-high. Never high together with `RD`. |
 | `RD` | in | 1 | Read command, active-high. Never high together with `WR`. |
 | `DATA_IN` | in | 1 | Bit to write to the addressed cell. |
-| `DATA_OUT` | out | 1 | Bit read from the addressed cell (sense amplifier buffer output). |
-| `RA<1:0>` | in | 2 | Row address. |
-| `CA<2:0>` | in | 3 | Column address. Only 000 to 101 are valid. |
-| `VDD` | inout | 1 | Supply. |
-| `VSS` | inout | 1 | Ground. |
+| `DATA_OUT` | out | 1 | Bit read from the addressed cell (sense amplifier output). |
+| `A<4:0>` | in | 5 | Address. `A<4:3>` is the row address and `A<2:0>` is the column address. |
+| `Vdd` | inout | 1 | Supply. |
+| `Vss` | inout | 1 | Ground. |
+
+### Block pins
+
+Do not change these without telling the group (see Rules).
+
+| Cell | Inputs | Outputs | Supply |
+| --- | --- | --- | --- |
+| `inverter` | `Vin` | `Vout` | `Vdd`, `Vss` |
+| `nand2` | `IN1`, `IN2` | `OUT` | `Vdd`, `Vss` |
+| `nand3` | `IN1`, `IN2`, `IN3` | `OUT` | `Vdd`, `Vss` |
+| `tri_inv` | `IN`, `EN` | `OUT` | `Vdd`, `Vss` |
+| `tgate` | `IN`, `SEL`, `SELB` | `OUT` | `Vdd`, `Vss` |
+| `row_decoder` | `A<1:0>` | `WL<3:0>` | `Vdd`, `Vss` |
+| `col_decoder` | `A<2:0>` | `CS<5:0>`, `CSB<5:0>` | `Vdd`, `Vss` |
+| `bitcell` | `WL` | `BL`, `BLB` (inout) | `VDD`, `GND` |
+| `precharge` | `CLK2` | `BL`, `BLB` (inout) | `Vdd` |
+| `sense_amp` | `IN+`, `IN-`, `EN` | `OUT` | `Vdd`, `Vss` |
+| `RW_ctrl` | `WR`, `RD`, `DATA_IN`, `CLK1` | `DB`, `DBB`, `REN` | `Vdd`, `Vss` |
 
 ### Internal nets
 
@@ -58,38 +85,47 @@ These nets connect the blocks inside `sram_top`. Label them in the schematic so 
 
 | Net | Width | Driven by | Meaning |
 | --- | --- | --- | --- |
-| `WL<3:0>` | 4 | Row decoder | Word lines, one per row. `WL<n>` selects row `Rn`. |
-| `COL<5:0>` | 6 | Column decoder | Column selects, active-high. `COL<n>` selects column `Cn`. All low for addresses 110 and 111. |
-| `BL<5:0>` | 6 | Precharge, cells, write driver | True bit lines, one per column. |
-| `BLB<5:0>` | 6 | Precharge, cells, write driver | Complement bit lines. |
-| `DB`, `DBB` | 1 each | Column pass gates | Shared data bus pair between the column pass gates and the write driver and sense amplifier. |
-| `WR_EN` | 1 | Read/write control | `WR` after the `CLK1` tri-state buffer; enables the write driver. |
-| `RD_EN` | 1 | Read/write control | `RD` after the `CLK1` tri-state buffer; enables the sense amplifier. |
-| `SA_OUT` | 1 | Sense amplifier | Sense amplifier output before the output buffer. |
-| `Q_R<r>_C<c>` | 24 nets | Cell | Storage node of the cell at row r, column c, for example `Q_R2_C4`. |
-| `QB_R<r>_C<c>` | 24 nets | Cell | Complement storage node of the same cell. |
+| `WL<3:0>` | 4 | `row_decoder` | Word lines, one per row. `WL<n>` selects row `Rn`. |
+| `CS<5:0>` | 6 | `col_decoder` | Column selects, active-high. `CS<n>` selects column `Cn`. All low for column addresses 110 and 111. |
+| `CSB<5:0>` | 6 | `col_decoder` | Complement column selects, for the `tgate` `SELB` inputs. |
+| `BL<5:0>` | 6 | `precharge`, bitcells | True bit lines, one per column. |
+| `BLB<5:0>` | 6 | `precharge`, bitcells | Complement bit lines. |
+| `DB`, `DBB` | 1 each | `RW_ctrl` | Write data and its complement, driven only while writing. |
+| `SA_BL`, `SA_BLB` | 1 each | Column `tgate`s | Selected bit line pair, into the sense amplifier `IN+` / `IN-`. |
+| `REN` | 1 | `RW_ctrl` | Read enable (`RD` gated by `CLK1`), drives the sense amplifier `EN`. |
+
+Many other nets in `sram_top` still have default names (`net1`, `net2`, …). Label any net you probe. The storage-node labels planned earlier (`Q_R<r>_C<c>`, `QB_R<r>_C<c>`) are not in the schematic yet, and the bitcell's internal nodes are unnamed.
 
 ### Address map
 
-The index in every net name equals the binary value of its address, so `RA = 10` and `CA = 011` select cell `Q_R2_C3`.
+The index in every net name equals the binary value of its address, so `A<4:3> = 10` and `A<2:0> = 011` select row R2, column C3.
 
-| `RA<1:0>` | Word line high | Row |
+| `A<4:3>` | Word line high | Row |
 | --- | --- | --- |
 | 00 | `WL<0>` | R0 |
 | 01 | `WL<1>` | R1 |
 | 10 | `WL<2>` | R2 |
 | 11 | `WL<3>` | R3 |
 
-| `CA<2:0>` | Column select high | Column |
+| `A<2:0>` | Column select high | Column |
 | --- | --- | --- |
-| 000 | `COL<0>` | C0 |
-| 001 | `COL<1>` | C1 |
-| 010 | `COL<2>` | C2 |
-| 011 | `COL<3>` | C3 |
-| 100 | `COL<4>` | C4 |
-| 101 | `COL<5>` | C5 |
+| 000 | `CS<0>` | C0 |
+| 001 | `CS<1>` | C1 |
+| 010 | `CS<2>` | C2 |
+| 011 | `CS<3>` | C3 |
+| 100 | `CS<4>` | C4 |
+| 101 | `CS<5>` | C5 |
 | 110 | none | unused |
 | 111 | none | unused |
+
+### Naming rules
+
+- **Cells:** lowercase `snake_case` (`sense_amp`, `row_decoder`). `RW_ctrl` is the one exception and is kept for now, since renaming a cell breaks every instance of it.
+- **Testbenches:** `<cell>_tb`.
+- **Buses:** `NAME<msb:0>`, with index 0 at the LSB.
+- **Complements:** add a `B` suffix (`BLB`, `CSB`, `DBB`, `SELB`).
+- **Gate pins:** `IN`/`IN1`…, `OUT`, `EN`, `SEL`/`SELB`.
+- **Power:** `Vdd` and `Vss`. `bitcell` still uses `VDD`/`GND`; that works, but new cells should use `Vdd`/`Vss`.
 
 ## File structure
 
@@ -183,17 +219,6 @@ Virtuoso `.oa` files are binary, so Git cannot merge them. If two people change 
 5. **Do not change pin names, pin order or symbols without telling the group.** `sram_top` depends on them.
 6. **Pull before you start and push when you finish.** Small, frequent commits are better than one large one.
 7. **Write commit messages that state the status,** for example `Row decoder: layout DRC clean, LVS pending`. The commit history is our progress log.
-
-## Interfaces
-
-Agree on these before building, and update this table when they change.
-
-| Cell | Pins | Notes |
-|---|---|---|
-| `bitcell` | TBD | |
-| `row_decoder` | TBD | |
-| `col_decoder` | TBD | |
-| `sense_amp` | TBD | |
 
 ## Troubleshooting
 

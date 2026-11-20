@@ -21,13 +21,13 @@ Only the owner of a cell commits changes to it. Everyone else opens it read-only
 
 | Cell | Description | Area | Owner | Views |
 |---|---|---|---|---|
-| `inverter` | Static CMOS inverter | Decoder | Person 1 | schematic, symbol |
-| `nand2` | 2-input NAND | Decoder | Person 1 | schematic, symbol |
-| `nand3` | 3-input NAND (column decoder) | Decoder | Person 1 | schematic, symbol |
+| `inverter` | Static CMOS inverter | Decoder | Person 1 | schematic, symbol, layout |
+| `nand2` | 2-input NAND | Decoder | Person 1 | schematic, symbol, layout |
+| `nand3` | 3-input NAND (column decoder) | Decoder | Person 1 | schematic, symbol, layout |
 | `tri_inv` | Tri-state inverter (read/write control) | Decoder | Person 1 | schematic, symbol |
 | `tgate` | Transmission gate (column pass gate) | Decoder | Person 1 | schematic, symbol |
-| `row_decoder` | 2-to-4 row decoder, drives the word lines | Decoder | Person 1 | schematic, symbol |
-| `col_decoder` | 3-to-6 column decoder, drives true and complement column selects | Decoder | Person 1 | schematic, symbol |
+| `row_decoder` | 2-to-4 row decoder, drives the word lines | Decoder | Person 1 | schematic, symbol, layout |
+| `col_decoder` | 3-to-6 column decoder, drives true and complement column selects | Decoder | Person 1 | schematic, symbol, layout |
 | `bitcell` | 6T SRAM bitcell (PD 240n, PG/PU 120n) | SRAM | Person 2 | schematic, symbol |
 | `bitcell_tb` | Bitcell testbench | SRAM | Person 2 | schematic, sim state |
 | `precharge` | Bit line precharge, one per column | SRAM | Person 2 | schematic, symbol |
@@ -39,9 +39,29 @@ Only the owner of a cell commits changes to it. Everyone else opens it read-only
 | `sram_top_tb` | Top-level testbench | Integration | Person 4 | schematic |
 | `test_schematic` | Scratch cell for testing the Git setup | — | anyone | schematic |
 
-There is no separate array cell: the 24 bitcells are placed directly in `sram_top`. No cell has a layout view yet.
+There is no separate array cell: the 24 bitcells are placed directly in `sram_top`. Layouts for `inverter`, `nand2`, `nand3`, `row_decoder`, and `col_decoder` are complete and have passed DRC and LVS. Status of other blocks is maintained by their owners.
 
 Testbenches go in their own cell named `<block>_tb` and belong to the owner of that block.
+
+## Decoder verification status
+
+As of November 20, 2026, the following cells have completed layouts with zero DRC violations and matching Assura LVS results:
+
+| Cell | Layout | DRC | LVS |
+|---|---|---|---|
+| `inverter` | Complete | Clean | Match |
+| `nand2` | Complete | Clean | Match |
+| `nand3` | Complete | Clean | Match |
+| `row_decoder` | Complete | Clean | Match |
+| `col_decoder` | Complete | Clean | Match |
+
+The completed cells have been committed to the decoder owner's branch. Merge them through the team's normal integration workflow.
+
+Schematic transient simulations verified the row and column decoder address mappings below. The row decoder asserts one of four word lines. The column decoder asserts one of six column selects for addresses `000` through `101`; addresses `110` and `111` leave all `CS` outputs low. `CSB` outputs complement `CS`.
+
+DRC checks physical design rules, and LVS confirms that the extracted layout circuit matches the schematic. Post-layout parasitic timing simulation and full SRAM integration verification are not covered by these passes. A transient word-line glitch was observed during the row-address transition `01` to `10`; integration must account for address settling before access.
+
+`tri_inv` and `tgate` are not instantiated inside either decoder. They remain listed in the project cell inventory because the SRAM architecture references them for read/write control and column switching. Their required implementation and layout scope must be confirmed with the peripheral and integration owners; the decoder passes do not establish that these cells are complete or unnecessary.
 
 ## Pinout and Naming Convention
 

@@ -1,0 +1,62 @@
+"#INPUTS"
+((name "DATA_IN") 
+    (nodes 
+	("DATA_IN" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "A<0>") 
+    (nodes 
+	("A<0>" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "A<1>") 
+    (nodes 
+	("A<1>" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "A<2>") 
+    (nodes 
+	("A<2>" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "A<3>") 
+    (nodes 
+	("A<3>" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "A<4>") 
+    (nodes 
+	("A<4>" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "WR") 
+    (nodes 
+	("WR" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "RD") 
+    (nodes 
+	("RD" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "CLK2") 
+    (nodes 
+	("CLK2" "/gnd!")
+    ) 
+    (enabled nil)
+)
+((name "CLK1") 
+    (nodes 
+	("CLK1" "/gnd!")
+    ) 
+    (enabled nil)
+)
+"#GLOBALS"
